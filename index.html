@@ -46,7 +46,7 @@
         }
 
         .container {
-            max-width: 768px;
+            max-width: 1100px;
             margin: 40px auto;
             padding: 0 20px;
         }
@@ -61,92 +61,70 @@
             gap: 8px;
         }
 
-        .card {
+        .table-container {
             background: white;
-            padding: 24px;
             border-radius: 16px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-            margin-bottom: 24px;
+            overflow-x: auto;
             border-top: 5px solid var(--scout-teal);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 30px -5px rgba(0, 0, 0, 0.08);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            min-width: 750px;
         }
 
-        .card h3 {
-            margin: 0 0 12px 0;
-            font-size: 20px;
-            font-weight: 700;
+        th {
+            background-color: #f3f4f6;
             color: var(--scout-dark);
-        }
-
-        .meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            font-size: 14px;
-            color: #4b5563;
-            margin-bottom: 16px;
-            background: #f3f4f6;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-weight: 600;
-        }
-
-        .meta div {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .card p {
-            color: #4b5563;
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .form-section {
-            border-top: 1px solid #e5e7eb;
-            padding-top: 16px;
-            margin-top: 16px;
-        }
-
-        .form-section label {
-            display: block;
-            font-size: 13px;
             font-weight: 700;
-            color: var(--scout-purple);
-            margin-bottom: 8px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            padding: 16px 20px;
+            border-bottom: 2px solid #e5e7eb;
         }
 
-        .input-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        td {
+            padding: 18px 20px;
+            font-size: 14px;
+            color: #4b5563;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: middle;
         }
 
-        @media (max-width: 600px) {
-            .input-row {
-                grid-template-columns: 1fr;
-            }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f9fafb;
+        }
+
+        .course-title {
+            font-weight: 700;
+            color: var(--scout-dark);
+            font-size: 15px;
+        }
+
+        .course-desc {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
         }
 
         input {
             width: 100%;
-            padding: 10px 14px;
-            font-size: 14px;
+            padding: 8px 10px;
+            font-size: 13px;
             font-family: 'Nunito Sans', sans-serif;
-            border-radius: 8px;
-            border: 1.5px solid #d1d5db;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
             box-sizing: border-box;
+            margin-bottom: 6px;
             outline: none;
-            transition: border-color 0.2s;
         }
 
         input:focus {
@@ -157,13 +135,12 @@
             background-color: var(--scout-purple);
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 14px;
+            padding: 8px 14px;
+            font-size: 13px;
             font-family: 'Nunito Sans', sans-serif;
             font-weight: 700;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            margin-top: 10px;
             width: 100%;
             transition: background-color 0.2s;
         }
@@ -184,8 +161,8 @@
         }
 
         .msg {
-            font-size: 13px;
-            margin-top: 10px;
+            font-size: 12px;
+            margin-top: 4px;
             font-weight: 700;
             text-align: center;
         }
@@ -200,7 +177,7 @@
 
     <div class="container">
         <div class="section-title">📅 Upcoming Training Modules</div>
-        <div id="training-list" class="loading">Loading training schedule...</div>
+        <div id="training-table-wrapper" class="loading">Loading training schedule...</div>
     </div>
 
     <script>
@@ -208,40 +185,60 @@
         const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw9QkAuMZCNCWmY2Cx8x3t8b-0Pl-zJSdmF1nbkPJ6-I6Nzk_zeTzkscQk1hdsih8_v2A/exec";
 
         async function fetchTrainings() {
-            const listDiv = document.getElementById('training-list');
+            const wrapperDiv = document.getElementById('training-table-wrapper');
             try {
                 const response = await fetch(APPS_SCRIPT_URL);
                 const data = await response.json();
 
                 if (data.status === "success" && data.trainings.length > 0) {
-                    listDiv.innerHTML = ""; 
+                    let tableHTML = `
+                        <div class="table-container">
+                            <table>
+                               <thead>
+                                   <tr>
+                                       <th>Training Module</th>
+                                       <th>Schedule / Dates</th>
+                                       <th>Location</th>
+                                       <th style="width: 280px;">Register Attendance</th>
+                                   </tr>
+                               </thead>
+                               <tbody>
+                    `;
+
                     data.trainings.forEach((item, index) => {
-                        const card = document.createElement('div');
-                        card.className = 'card';
-                        card.innerHTML = `
-                            <h3>${item.title}</h3>
-                            <div class="meta">
-                                <div>📅 <span>${item.date}</span></div>
-                                <div>📍 <span>${item.location}</span></div>
-                            </div>
-                            <p>${item.description}</p>
-                            <div class="form-section">
-                                <label>Register Attendance</label>
-                                <div class="input-row">
+                        // Support both 'schedule' or 'date' keys depending on your sheet mapping
+                        const scheduleText = item.schedule || item.date || 'TBD';
+                        
+                        tableHTML += `
+                            <tr>
+                                <td>
+                                    <div class="course-title">${item.title}</div>
+                                    <div class="course-desc">${item.description}</div>
+                                </td>
+                                <td><strong>📅 ${scheduleText}</strong></td>
+                                <td>📍 ${item.location}</td>
+                                <td>
                                     <input type="text" id="name-${index}" placeholder="Full Name" required />
                                     <input type="email" id="email-${index}" placeholder="Email Address" required />
-                                </div>
-                                <button onclick="registerUser('${item.title.replace(/'/g, "\\'")}', ${index})">Confirm Sign-Up</button>
-                                <div id="msg-${index}" class="msg"></div>
-                            </div>
+                                    <button onclick="registerUser('${item.title.replace(/'/g, "\\'")}', ${index})">Sign Up</button>
+                                    <div id="msg-${index}" class="msg"></div>
+                                </td>
+                            </tr>
                         `;
-                        listDiv.appendChild(card);
                     });
+
+                    tableHTML += `
+                               </tbody>
+                            </table>
+                        </div>
+                    `;
+
+                    wrapperDiv.innerHTML = tableHTML;
                 } else {
-                    listDiv.innerHTML = `<div class="empty-state">No training courses currently scheduled. Check back soon!</div>`;
+                    wrapperDiv.innerHTML = `<div class="empty-state">No training courses currently scheduled. Check back soon!</div>`;
                 }
             } catch (error) {
-                listDiv.innerHTML = `<div class="empty-state" style="color: #dc2626;">Failed to load training schedule. Please check connection.</div>`;
+                wrapperDiv.innerHTML = `<div class="empty-state" style="color: #dc2626;">Failed to load training schedule. Please check connection.</div>`;
                 console.error(error);
             }
         }
@@ -253,12 +250,12 @@
 
             if (!nameInput.value || !emailInput.value) {
                 msgDiv.style.color = "#dc2626";
-                msgDiv.innerText = "Please provide both your name and email.";
+                msgDiv.innerText = "Please provide both name & email.";
                 return;
             }
 
             msgDiv.style.color = "#7413dc";
-            msgDiv.innerText = "Submitting registration...";
+            msgDiv.innerText = "Submitting...";
 
             try {
                 await fetch(APPS_SCRIPT_URL, {
@@ -273,12 +270,12 @@
                 });
 
                 msgDiv.style.color = "#10b981";
-                msgDiv.innerText = "Successfully registered! Your details have been recorded.";
+                msgDiv.innerText = "Registered successfully!";
                 nameInput.value = "";
                 emailInput.value = "";
             } catch (error) {
                 msgDiv.style.color = "#dc2626";
-                msgDiv.innerText = "Submission failed. Please try again.";
+                msgDiv.innerText = "Failed. Try again.";
                 console.error(error);
             }
         }
