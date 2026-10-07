@@ -1,1 +1,49 @@
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHlzK7mXcXcmMs_ssJjCSQyaO2WxtBfupeafjncDLaQsq0nNSmcYxH3Vdmyd1rjbNoXw/exec";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decoupled Apps Script App</title>
+    <style>
+        body { font-family: system-ui, sans-serif; text-align: center; margin-top: 80px; background: #f8fafc; color: #1e293b; }
+        .card { background: white; max-width: 400px; margin: 0 auto; padding: 40px; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        button { background: #2563eb; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        button:hover { background: #1d4ed8; }
+        #result { margin-top: 20px; font-weight: 500; color: #059669; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>My Custom Frontend</h1>
+        <p>Click below to fetch live data from Google Apps Script.</p>
+        <button id="fetchBtn">Get Data</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // PASTE YOUR APPS SCRIPT WEB APP URL HERE:
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwHlzK7mXcXcmMs_ssJjCSQyaO2WxtBfupeafjncDLaQsq0nNSmcYxH3Vdmyd1rjbNoXw/exec";
+
+        document.getElementById('fetchBtn').addEventListener('click', async () => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "Connecting to Google...";
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL);
+                const data = await response.json();
+                
+                if (data.status === "success") {
+                    resultDiv.innerText = data.message + " (" + data.timestamp + ")";
+                } else {
+                    resultDiv.innerText = "Error from backend.";
+                }
+            } catch (error) {
+                resultDiv.innerText = "Failed to connect: " + error.message;
+                console.error(error);
+            }
+        });
+    </script>
+
+</body>
+</html>
